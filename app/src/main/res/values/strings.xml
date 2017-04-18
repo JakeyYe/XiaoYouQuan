@@ -5,4 +5,8 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_settings">Settings</string>
+    <string name="dongtai">校园动态</string>
+    <string name="xiaozhitiao">小纸条</string>
+    <string name="quanzi">圈子</string>
+
 </resources>
