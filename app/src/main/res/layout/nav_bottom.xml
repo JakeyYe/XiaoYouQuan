@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/nav_bottom"
+    android:layout_width="match_parent"
+    android:layout_height="48dp"
+    android:layout_alignParentBottom="true"
+    android:orientation="horizontal"
+    android:textAppearance="@style/TextAppearance.AppCompat.Display1">
+
+    <TextView
+        android:id="@+id/nav_menu_setup"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:paddingStart="24dp"
+        android:gravity="left|center_vertical"
+        android:onClick="onClick2NavMenu"
+        android:drawableStart="@drawable/ic_star_border_black_24dp"
+        android:text="@string/nav_menu_setup" />
+
+    <TextView
+        android:id="@+id/nav_menu_mode"
+        android:layout_marginLeft="24dp"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:onClick="onClick2NavMenu"
+        android:paddingStart="24dp"
+        android:gravity="left|center_vertical"
+        android:drawableStart="@drawable/ic_star_border_black_24dp"
+        android:text="@string/nav_menu_mode" />
+</LinearLayout>

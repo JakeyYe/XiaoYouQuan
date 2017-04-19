@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">XiaoYouQuan</string>
+    <string name="app_name">校友圈</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -7,6 +7,14 @@
     <string name="action_settings">Settings</string>
     <string name="dongtai">校园动态</string>
     <string name="xiaozhitiao">小纸条</string>
-    <string name="quanzi">圈子</string>
+    <string name="quanzi">校友圈</string>
+    <string name="userName">JakeyYe</string>
+    <string name="nav_menu_wall">私语墙</string>
+    <string name="nav_menu_market">跳蚤市场</string>
+    <string name="nav_menu_lost">失物招领</string>
+    <string name="nav_menu_class">课程表</string>
+    <string name="nav_menu_delivery">顺风快递</string>
+    <string name="nav_menu_setup">设置</string>
+    <string name="nav_menu_mode">夜间</string>
 
 </resources>

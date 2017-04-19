@@ -411,11 +411,6 @@
     <option name="USE_PROJECT_SETTINGS" value="true" />
     <option name="USE_ALTERNATE_LOCATION" value="false" />
   </component>
-  <component name="SvnConfiguration">
-    <option name="USER" value="" />
-    <option name="PASSWORD" value="" />
-    <option name="PROCESS_UNRESOLVED" value="false" />
-  </component>
   <component name="VCS.FileViewConfiguration">
     <option name="SELECTED_STATUSES" value="DEFAULT" />
     <option name="SELECTED_COLUMNS" value="DEFAULT" />

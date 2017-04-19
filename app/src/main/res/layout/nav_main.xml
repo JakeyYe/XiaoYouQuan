@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/nav_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="start"
+    android:background="@android:color/white"
+    android:fitsSystemWindows="true">
+
+
+    <ListView
+        android:id="@+id/nav_header_and_menu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:paddingTop="0dp"
+        android:background="#ffffffff"
+        android:clipToPadding="false"
+        android:divider="@null"
+        android:listSelector="?attr/selectableItemBackground" />
+
+    <include layout="@layout/nav_bottom" />
+</RelativeLayout>
