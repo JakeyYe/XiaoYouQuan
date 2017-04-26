@@ -2,6 +2,7 @@ package com.example.mrye.xiaoyouquan;
 
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -24,6 +25,7 @@ import com.example.mrye.xiaoyouquan.adpter.MenuItemAdapter;
 import com.example.mrye.xiaoyouquan.fragment.DongTaiFragment;
 import com.example.mrye.xiaoyouquan.fragment.QuanZiFragment;
 import com.example.mrye.xiaoyouquan.fragment.XiaoZhiTiaoFragment;
+import com.example.mrye.xiaoyouquan.utils.LogUtil;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -146,6 +148,22 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Toast.makeText(MainActivity.this, ((TextView) view).getText(), Toast.LENGTH_SHORT).show();
+                LogUtil.d("MainActivity", "" + position + "=====" + id);
+                //1.私语墙 2.跳蚤市场 3.失物招领 4.课程表 5.顺风快递
+                switch (position) {
+                    case 1:
+                        break;
+                    case 2:
+                        break;
+                    case 3:
+                        break;
+                    case 4:
+                        Intent intent = new Intent(MainActivity.this, KeChengBiaoActivity.class);
+                        startActivity(intent);
+                        break;
+                    case 5:
+                        break;
+                }
             }
         });
     }
