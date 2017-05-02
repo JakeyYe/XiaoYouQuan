@@ -1,5 +1,6 @@
 package com.example.mrye.xiaoyouquan;
 
+import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -7,19 +8,25 @@ import android.text.Editable;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.mrye.xiaoyouquan.utils.Constants;
 import com.example.mrye.xiaoyouquan.utils.HttpUtil;
 import com.example.mrye.xiaoyouquan.utils.LogUtil;
+import com.example.mrye.xiaoyouquan.utils.OkHttpUtil;
 import com.example.mrye.xiaoyouquan.utils.PrefUtils;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -52,26 +59,38 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private String mUsername;
     private String mPassword;
 
+    /**
+     * 用于存放请求头和请求参数
+     */
+    private static Map<String, String> requestHeadersMap, loginRequestBodyMap, scheduleRequestBodyMap;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
+        //保存上一次登陆成功的用户名和密码
         et_username.setText(PrefUtils.getString(LoginActivity.this, "username", ""));
         et_password.setText(PrefUtils.getString(LoginActivity.this, "password", ""));
         PrefUtils.setString(LoginActivity.this, "username", "");
         PrefUtils.setString(LoginActivity.this, "password", "");
+        //设置图标按钮点击事件
         btn_username_clear.setOnClickListener(this);
         btn_password_clear.setOnClickListener(this);
         btn_password_eye.setOnClickListener(this);
+        //设置图标清除按钮的显示隐藏
         initWatcher();
         et_username.addTextChangedListener(username_watcher);
         et_password.addTextChangedListener(password_watcher);
-
+        //设置登陆按钮点击事件
         btn_login.setOnClickListener(this);
-
+        //初始化用于存放请求头和请求参数集合
+        requestHeadersMap = new LinkedHashMap<String, String>();
+        loginRequestBodyMap = new LinkedHashMap<>(); // java 1.7 开始可以通过这种写法初始化集合
+        scheduleRequestBodyMap = new LinkedHashMap<>();
     }
 
+    //设置图标清除按钮的显示隐藏，有输入则显示，无输入则隐藏
     private void initWatcher() {
         username_watcher = new TextWatcher() {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -136,6 +155,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
+    //以武汉纺织大学为例，登陆信息门户--进入教务系统--获取课表数据（cookie不一致问题解决）
     private void login() {
         mUsername = et_username.getText().toString().trim();
         mPassword = et_password.getText().toString().trim();
@@ -147,44 +167,98 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             et_password.setError("密码不能为空");
             return;
         }
-        String URL = "http://ids.wtu.edu.cn/amserver/UI/Login?IDToken1=" + mUsername + "&IDToken2=" + mPassword + "&goto=http://my.wtu.edu.cn/index.portal&gx_charset=UTF-8";
-        HttpUtil.sendOkHttpRequest(URL, new Callback() {
+        requestHeadersMap.put(Constants.HEADER_NAME_HOST, Constants.HEADER_VALUE_HOST);
+        requestHeadersMap.put(Constants.HEADER_NAME_REFERER, Constants.HEADER_VALUE_REFERER);
+        requestHeadersMap.put(Constants.HEADER_NAME_AGENT, Constants.HEADER_VALUE_AGENT);
+        loginRequestBodyMap.put(Constants.LOGIN_BODY_NAME_IDToken0, Constants.LOGIN_BODY_VALUE_IDToken0);
+        loginRequestBodyMap.put(Constants.LOGIN_BODY_NAME_IDButton, Constants.LOGIN_BODY_VALUE_IDButton);
+        loginRequestBodyMap.put(Constants.LOGIN_BODY_NAME_goto, Constants.LOGIN_BODY_VALUE_goto);
+        loginRequestBodyMap.put(Constants.LOGIN_BODY_NAME_encoded, Constants.LOGIN_BODY_VALUE_encoded);
+        loginRequestBodyMap.put(Constants.LOGIN_BODY_NAME_gx_charset, Constants.LOGIN_BODY_VALUE_gx_charset);
+        loginRequestBodyMap.put(Constants.LOGIN_BODY_NAME_USERNAME, mUsername);
+        loginRequestBodyMap.put(Constants.LOGIN_BODY_NAME_PASSWORD, mPassword);
+        OkHttpUtil.postAsync(Constants.EDUCATION_SYSTEM_LOGIN_URL, new OkHttpUtil.ResultCallback() {
             @Override
-            public void onFailure(Call call, IOException e) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(LoginActivity.this, "世界上最遥远的距离就是没有网", Toast.LENGTH_SHORT).show();
-                    }
-                });
+            public void onError(Call call, Exception e) {
+                Toast.makeText(LoginActivity.this, "世界上最遥远的距离就是没有网", Toast.LENGTH_SHORT).show();
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                Document doc = Jsoup.parse(response.body().string());
-                String title = doc.title();
-                LogUtil.d("LoginActivity", title);
-                if ("\uFEFF武汉纺织大学统一身份认证".equals(title)) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
+            public void onResponse(byte[] response) {
+                if (null != response) {
+                    try {
+                        String result = new String(response, "utf-8");
+                        Document doc = Jsoup.parse(result);
+                        String title = doc.title();
+                        LogUtil.d("LoginActivity", title);
+                        if ("\uFEFF武汉纺织大学统一身份认证".equals(title)) {
                             Toast.makeText(LoginActivity.this, "学号或密码不正确", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                } else {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
+                        } else {
                             Toast.makeText(LoginActivity.this, "登陆成功", Toast.LENGTH_SHORT).show();
+                            //进入教务系统
+                            searchEduSystem(LoginActivity.this);
+                            //保存用户名和密码
+                            PrefUtils.setString(LoginActivity.this, "username", mUsername);
+                            PrefUtils.setString(LoginActivity.this, "password", mPassword);
+                            //跳转到主界面
+                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                            startActivity(intent);
+                            //关闭登录界面
+                            finish();
                         }
-                    });
-                    PrefUtils.setString(LoginActivity.this, "username", mUsername);
-                    PrefUtils.setString(LoginActivity.this, "password", mPassword);
-                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                    startActivity(intent);
-                    finish();
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+
+                } else {
+                    Toast.makeText(LoginActivity.this, "服务器错误，请重试!", Toast.LENGTH_SHORT).show();
+                    LoginActivity.this.finish();
                 }
             }
+
+
+        }, loginRequestBodyMap, requestHeadersMap);
+    }
+
+    private void searchEduSystem(final Context context) {
+        //http://jwglxt.wtu.edu.cn/ssoserver/login?ywxt=jw&url=xtgl/index_initMenu.html
+        OkHttpUtil.getAsync("http://jwglxt.wtu.edu.cn/ssoserver/login?ywxt=jw&url=xtgl/index_initMenu.html", new OkHttpUtil.ResultCallback() {
+            @Override
+            public void onError(Call call, Exception e) {
+                Toast.makeText(context, "进入教务系统失败，请重试", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onResponse(byte[] response) {
+                //查看课表
+                searchScheduleOperation(LoginActivity.this);
+            }
         });
+    }
+
+    public void searchScheduleOperation(final Context context) {
+        requestHeadersMap.put(Constants.HEADER_NAME_HOST, "jwglxt.wtu.edu.cn");
+        requestHeadersMap.put(Constants.HEADER_NAME_REFERER, "http://jwglxt.wtu.edu.cn/jwglxt/kbcx/xskbcx_cxXsKb.html?gnmkdmKey=N253508");
+        scheduleRequestBodyMap.put(Constants.SCHEDULE_BODY_NAME_SCHOOLYEAR, "2016");
+        scheduleRequestBodyMap.put(Constants.SCHEDULE_BODY_NAME_TERM, "12");
+
+        OkHttpUtil.postAsync("http://jwglxt.wtu.edu.cn/jwglxt/kbcx/xskbcx_cxXsKb.html?gnmkdmKey=N253508", new OkHttpUtil.ResultCallback() {
+            @Override
+            public void onError(Call call, Exception e) {
+                Toast.makeText(context, "获取课表失败,请重试!", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onResponse(byte[] response) {
+                try {
+                    String result = new String(response, "utf-8");
+                    LogUtil.d("LoginActivity", result);
+                    //将课表数据存储在SharedPreferences中
+                    PrefUtils.setString(LoginActivity.this, "KeBiaoData", result);
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, scheduleRequestBodyMap, requestHeadersMap);
     }
 }
