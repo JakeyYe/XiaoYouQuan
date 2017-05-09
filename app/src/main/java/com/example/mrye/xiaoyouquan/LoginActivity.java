@@ -2,20 +2,18 @@ package com.example.mrye.xiaoyouquan;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.mrye.xiaoyouquan.utils.Constants;
-import com.example.mrye.xiaoyouquan.utils.HttpUtil;
 import com.example.mrye.xiaoyouquan.utils.LogUtil;
 import com.example.mrye.xiaoyouquan.utils.OkHttpUtil;
 import com.example.mrye.xiaoyouquan.utils.PrefUtils;
@@ -23,16 +21,14 @@ import com.example.mrye.xiaoyouquan.utils.PrefUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Response;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -239,8 +235,20 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     public void searchScheduleOperation(final Context context) {
         requestHeadersMap.put(Constants.HEADER_NAME_HOST, "jwglxt.wtu.edu.cn");
         requestHeadersMap.put(Constants.HEADER_NAME_REFERER, "http://jwglxt.wtu.edu.cn/jwglxt/kbcx/xskbcx_cxXsKb.html?gnmkdmKey=N253508");
-        scheduleRequestBodyMap.put(Constants.SCHEDULE_BODY_NAME_SCHOOLYEAR, "2016");
-        scheduleRequestBodyMap.put(Constants.SCHEDULE_BODY_NAME_TERM, "12");
+        Calendar calendar = Calendar.getInstance();
+        int month = 1 + calendar.get(Calendar.MONTH);  //获取当前月份,2-8月为第二学期，9-3月为第一学期
+        String team;
+        if (month >= 2 && month <= 8) {
+            team = "12";
+        } else {
+            team = "3";
+        }
+        int currentYear = calendar.get(Calendar.YEAR);
+        if (month >= 1 && month <= 8) {
+            currentYear--;  //1到8月学年为当前年份减1
+        }
+        scheduleRequestBodyMap.put(Constants.SCHEDULE_BODY_NAME_SCHOOLYEAR, "" + currentYear);
+        scheduleRequestBodyMap.put(Constants.SCHEDULE_BODY_NAME_TERM, team);  //3为第一学期--12为第二学期
 
         OkHttpUtil.postAsync("http://jwglxt.wtu.edu.cn/jwglxt/kbcx/xskbcx_cxXsKb.html?gnmkdmKey=N253508", new OkHttpUtil.ResultCallback() {
             @Override
